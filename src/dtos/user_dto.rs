@@ -14,7 +14,7 @@ pub struct CreateUserDto {
 
   #[validate(length(min = 6, message = "A senha deve ter no mínimo 6 caracteres"))]
   //#[validate(regex(path = "RE_PASSWORD", message = "A senha deve conter letras e números"))]
-  pub senha: String,
+  pub password_hash: String,
 }
 
 #[derive(Deserialize, Validate)]
@@ -24,6 +24,6 @@ pub struct EmailQueryDto {
 
 #[derive(Deserialize, Validate)]
 pub struct UpdateUserDto {
-    pub novo_email: Option<String>,
-    pub nova_senha: Option<String>
+    pub email: Option<String>,
+    pub password_hash: Option<String>
 }

@@ -36,7 +36,7 @@ impl Email {
 #[derive(Serialize, Debug)]
 pub struct UserEntity {    
     pub email: Email,
-    pub senha: String
+    pub password_hash: String
 }
 
 
@@ -47,7 +47,7 @@ impl From<UserModel> for UserEntity {
 
         UserEntity {
             email: validated_email,
-            senha: user.senha
+            password_hash: user.password_hash
         }
     }
 }
@@ -66,26 +66,26 @@ impl UserEntity {
     }*/
 
     /// Transforma uma senha comum em um hash seguro para o banco de dados
-    pub fn hash_password(senha: &String) -> Result<String, argon2::password_hash::Error> {
+    pub fn hash_password(password_hash: &String) -> Result<String, argon2::password_hash::Error> {
         let salt = SaltString::generate(&mut OsRng);
         let argon2 = Argon2::default();
         
         // O hash resultante contém o algoritmo, parâmetros, salt e o hash propriamente dito
         let password_hash = argon2
-            .hash_password(senha.as_bytes(), &salt)?
+            .hash_password(password_hash.as_bytes(), &salt)?
             .to_string();
             
         Ok(password_hash)
     }
 
     /// Verifica se a tentativa do usuário bate com o hash salvo
-    pub fn verify_password(senha: &String, stored_hash: &str) -> bool {
+    pub fn verify_password(password_hash: &String, stored_hash: &str) -> bool {
         let Ok(parsed_hash) = PasswordHash::new(stored_hash) else {
             return false;
         };
         
         Argon2::default()
-            .verify_password(senha.as_bytes(), &parsed_hash)
+            .verify_password(password_hash.as_bytes(), &parsed_hash)
             .is_ok()
     }
 }

@@ -18,7 +18,7 @@ impl UserService {
       let email = Email::new(dto.email);
       let validated = Email::parse(email.as_str().to_string());
       let validated_email = validated.unwrap();
-      let hash_password = UserEntity::hash_password(&dto.senha).unwrap();
+      let hash_password = UserEntity::hash_password(&dto.password_hash).unwrap();
       
       //let is_equal = UserEntity::verify_password(&dto.senha, &hash_password);
       //println!("{is_equal}");          

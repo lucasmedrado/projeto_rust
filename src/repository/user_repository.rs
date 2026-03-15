@@ -11,7 +11,7 @@ impl UserRepository {
     &self, 
     executor: &mut E,
     email: &str, 
-    senha: &str
+    password_hash: &str
   ) -> Result<UserEntity, MyError>
     where
       for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres>
@@ -25,12 +25,12 @@ impl UserRepository {
 
     let user = sqlx::query_as!(
       UserModel,    
-      r#"INSERT INTO users (email, senha)
+      r#"INSERT INTO users (email, password_hash)
       VALUES ($1, $2)
-      RETURNING id, email, senha
+      RETURNING id, email, password_hash
       "#,
       email,
-      senha
+      password_hash
     )
     .fetch_one(executor)
     .await
@@ -62,13 +62,13 @@ impl UserRepository {
         UPDATE users
         SET
           email = COALESCE($1, email),
-          senha = COALESCE($2, senha)
+          password_hash = COALESCE($2, password_hash)
           
         WHERE email = $3
-        RETURNING id, email, senha
+        RETURNING id, email, password_hash
         "#,
-        params.novo_email,
-        params.nova_senha,
+        params.email,
+        params.password_hash,
         email        
       )
       .fetch_one(executor)
@@ -123,7 +123,7 @@ impl UserRepository {
       r#"
         DELETE FROM users
         WHERE email = $1
-        RETURNING id, email, senha      
+        RETURNING id, email, password_hash      
       "#,
       email
     )
