@@ -1,11 +1,9 @@
-use serde::Deserialize;
+use serde::{Serialize, Deserialize};
 use validator::Validate;
-//use lazy_static::lazy_static;
-use regex::Regex;
 
-/*lazy_static! {
-  pub static ref RE_PASSWORD: Regex = Regex::new(r"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$").unwrap();
-}*/
+use crate::domain::user::UserEntity;
+
+
 
 #[derive(Deserialize, Validate)]
 pub struct CreateUserDto {
@@ -26,4 +24,10 @@ pub struct EmailQueryDto {
 pub struct UpdateUserDto {
     pub email: Option<String>,
     pub password_hash: Option<String>
+}
+
+#[derive(Serialize)]
+pub struct UserAuthedResponse {
+    pub user: UserEntity,
+    pub token: String,
 }

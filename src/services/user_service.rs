@@ -18,20 +18,23 @@ impl UserService {
       let email = Email::new(dto.email);
       let validated = Email::parse(email.as_str().to_string());
       let validated_email = validated.unwrap();
-      let hash_password = UserEntity::hash_password(&dto.password_hash).unwrap();
+      let hash_password = UserEntity::hash_password(Some(&dto.password_hash)).unwrap();
       
       //let is_equal = UserEntity::verify_password(&dto.senha, &hash_password);
       //println!("{is_equal}");          
 
-      let user_domain = user.create_user(&mut *tx, validated_email.as_str(), &hash_password).await.map_err(|_e| MyError::DatabaseError(sqlx::Error::PoolClosed))?;
+      let user_domain = user.create_user(&mut *tx, validated_email.as_str(), &hash_password.unwrap()).await.map_err(|_e| MyError::DatabaseError(sqlx::Error::PoolClosed))?;
       
-      tx.commit().await.map_err(|_e| MyError::DatabaseError(sqlx::Error::PoolClosed))?;
+      tx.commit().await.map_err(|_e| {
+        println!("{_e}");
+        MyError::DatabaseError(sqlx::Error::PoolClosed)
+      })?;
 
       Ok(user_domain)
     }
 
 
-    pub async fn update_user(pool: PgPool, email: String, dto: UpdateUserDto) -> Result<UserEntity, MyError> {
+    pub async fn update_user(pool: PgPool, email: String, mut dto: UpdateUserDto) -> Result<UserEntity, MyError> {
       let mut tx = pool
       .begin()
       .await
@@ -39,6 +42,9 @@ impl UserService {
         println!("{e}");
         MyError::NotFound
       })?;
+      
+      let password = UserEntity::hash_password(dto.password_hash.as_ref()).unwrap();
+      dto.password_hash = password;
 
       let user = UserRepository;  
       

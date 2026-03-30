@@ -34,7 +34,10 @@ impl UserRepository {
     )
     .fetch_one(executor)
     .await
-    .map_err(|_e| MyError::DatabaseError(sqlx::Error::PoolClosed))?;
+    .map_err(|_e| {
+      println!("{_e}");
+      MyError::DatabaseError(sqlx::Error::PoolClosed)
+    })?;
     
     let user_domain = UserEntity::from(user); 
     

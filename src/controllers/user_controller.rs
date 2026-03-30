@@ -4,27 +4,42 @@ use sqlx::PgPool;
 
 
 use crate::validated_json::ValidatedJson;
-use crate::dtos::user_dto::{CreateUserDto, EmailQueryDto, UpdateUserDto};
+use crate::dtos::user_dto::{CreateUserDto, EmailQueryDto, UpdateUserDto, UserAuthedResponse};
 use crate::domain::user::UserEntity;
 use crate::services::user_service::UserService; 
+use crate::auth::middleware::AuthUser;
+use crate::auth::jwt::generate_token;
 use crate::errors::MyError;
 
 pub async fn create_user_handler(
   State(pool): State<PgPool>,
   ValidatedJson(payload): ValidatedJson<CreateUserDto>
-) -> Result<(StatusCode, Json<UserEntity>), MyError> {
+) -> Result<(StatusCode, Json<UserAuthedResponse>), MyError> {
   
   let user = UserService::create_user(pool, payload).await?;
+  let id = user.id.unwrap();
+  let email = user.email.as_str();
+  println!("controller");
+  let token = generate_token(id, &email)
+  .map_err(|_e| {
+    println!("{_e}");
+    MyError::DatabaseError(sqlx::Error::PoolClosed)
+  })?;
 
-  Ok((StatusCode::CREATED, Json(user)))
+  let response = UserAuthedResponse {
+    user,
+    token,
+  };
+
+  Ok((StatusCode::CREATED, Json(response)))
 }
 
-
 pub async fn update_user_handler(  
+  AuthUser(claims): AuthUser,
   Path(email): Path<String>,
   State(pool): State<PgPool>,
   ValidatedJson(payload): ValidatedJson<UpdateUserDto>
-) -> Result<(StatusCode, Json<UserEntity>), MyError> {
+) -> Result<(StatusCode, Json<UserEntity>), MyError> {  
 
   let user = UserService::update_user(pool, email, payload).await?;
 

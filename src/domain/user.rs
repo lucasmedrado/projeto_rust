@@ -1,5 +1,6 @@
 use validator::validate_email;
 use serde::Serialize;
+use uuid::Uuid;
 use argon2::{
     password_hash::{
         rand_core::OsRng,
@@ -9,7 +10,6 @@ use argon2::{
 };
 
 use crate::models::user::UserModel;
-
 
 #[derive(Debug, Serialize)]
 pub struct Email(String);
@@ -34,7 +34,8 @@ impl Email {
 }
 
 #[derive(Serialize, Debug)]
-pub struct UserEntity {    
+pub struct UserEntity { 
+    pub id: Option<Uuid>,  
     pub email: Email,
     pub password_hash: String
 }
@@ -46,6 +47,7 @@ impl From<UserModel> for UserEntity {
         let validated_email = Email::parse(user.email).unwrap();
 
         UserEntity {
+            id: Some(user.id),
             email: validated_email,
             password_hash: user.password_hash
         }
@@ -55,18 +57,12 @@ impl From<UserModel> for UserEntity {
 
 impl UserEntity {
 
-    /*pub fn new(user: UserModel) -> Self {
-        let validated_email = Email::parse(user.email).unwrap();
-        //let validated_email = validated
-        
-        UserEntity {
-            email: validated_email,
-            senha: user.senha
-        }
-    }*/
-
     /// Transforma uma senha comum em um hash seguro para o banco de dados
-    pub fn hash_password(password_hash: &String) -> Result<String, argon2::password_hash::Error> {
+    pub fn hash_password(new_password_hash: Option<&String>) -> Result<Option<String>, argon2::password_hash::Error> {
+        let Some(password_hash) = new_password_hash else {
+            return Ok(None);
+        };
+
         let salt = SaltString::generate(&mut OsRng);
         let argon2 = Argon2::default();
         
@@ -75,7 +71,7 @@ impl UserEntity {
             .hash_password(password_hash.as_bytes(), &salt)?
             .to_string();
             
-        Ok(password_hash)
+        Ok(Some(password_hash))
     }
 
     /// Verifica se a tentativa do usuário bate com o hash salvo

@@ -6,6 +6,7 @@ mod repository;
 mod services;
 mod controllers;
 mod errors;
+mod auth;
 
 use controllers::user_controller::{
     create_user_handler, 
@@ -45,6 +46,6 @@ async fn main() {
 
     println!("🚀 Servidor rodando em http://{}", listener.local_addr().unwrap());
 
-    axum::serve(listener, app).await.unwrap(); 
+    axum::serve(listener, app).await.unwrap();         
    
 }
