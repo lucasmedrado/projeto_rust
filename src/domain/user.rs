@@ -9,7 +9,7 @@ use argon2::{
     Argon2
 };
 
-use crate::models::user::UserModel;
+use crate::models::user::UserModel; 
 
 #[derive(Debug, Serialize)]
 pub struct Email(String);
@@ -33,7 +33,7 @@ impl Email {
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug)] 
 pub struct UserEntity { 
     pub id: Option<Uuid>,  
     pub email: Email,
@@ -49,7 +49,7 @@ impl From<UserModel> for UserEntity {
         UserEntity {
             id: Some(user.id),
             email: validated_email,
-            password_hash: user.password_hash
+            password_hash: user.password_hash 
         }
     }
 }

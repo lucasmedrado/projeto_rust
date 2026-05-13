@@ -1,6 +1,7 @@
 use axum::{http::StatusCode, response::{IntoResponse, Response}};
 use sqlx::Error;
-use crate::domain::user::UserEntity;
+
+#[derive(Debug)]
 pub enum MyError {
     NotFound,
     DatabaseError(Error),

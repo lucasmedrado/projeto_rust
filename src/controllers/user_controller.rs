@@ -2,7 +2,6 @@ use axum::extract::Query;
 use axum::{extract::{State, Path}, Json, http::StatusCode, response::IntoResponse};
 use sqlx::PgPool;
 
-
 use crate::validated_json::ValidatedJson;
 use crate::dtos::user_dto::{CreateUserDto, EmailQueryDto, UpdateUserDto, UserAuthedResponse};
 use crate::domain::user::UserEntity;
@@ -16,15 +15,13 @@ pub async fn create_user_handler(
   ValidatedJson(payload): ValidatedJson<CreateUserDto>
 ) -> Result<(StatusCode, Json<UserAuthedResponse>), MyError> {
   
+  
   let user = UserService::create_user(pool, payload).await?;
   let id = user.id.unwrap();
-  let email = user.email.as_str();
-  println!("controller");
+  let email = user.email.as_str();  
   let token = generate_token(id, &email)
-  .map_err(|_e| {
-    println!("{_e}");
-    MyError::DatabaseError(sqlx::Error::PoolClosed)
-  })?;
+  .map_err(|_e| MyError::DatabaseError(sqlx::Error::PoolClosed))?;    
+  
 
   let response = UserAuthedResponse {
     user,
@@ -51,7 +48,7 @@ pub async fn find_user_handler(
   Query(params): Query<EmailQueryDto>
 ) -> Result<impl IntoResponse, MyError> {
 
-  let user = UserService::find_user(pool, &params.email).await?;
+  let user = UserService::find_user(pool, &params.email).await?;  
 
   Ok((StatusCode::FOUND, Json(user)))
 }

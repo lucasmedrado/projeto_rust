@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use validator::Validate;
 
-use crate::domain::user::UserEntity;
+use crate::domain::user::UserEntity; 
 
 
 
@@ -29,5 +29,5 @@ pub struct UpdateUserDto {
 #[derive(Serialize)]
 pub struct UserAuthedResponse {
     pub user: UserEntity,
-    pub token: String,
+    pub token: String, 
 }

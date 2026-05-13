@@ -1,5 +1,4 @@
 use sqlx::PgPool;
-use sqlx::postgres::PgPoolOptions;
 use crate::dtos::user_dto::{CreateUserDto, UpdateUserDto};
 use crate::domain::user::{Email, UserEntity};
 use crate::repository::user_repository::UserRepository;
@@ -11,24 +10,20 @@ impl UserService {
     pub async fn create_user(pool: PgPool, dto: CreateUserDto) -> Result<UserEntity, MyError> {
       let mut tx = pool
       .begin()
-      .await
-      .map_err(|_e| MyError::DatabaseError(sqlx::Error::PoolClosed))?;
+      .await?;
 
       let user = UserRepository;
-      let email = Email::new(dto.email);
+      let email = Email::new(dto.email); 
       let validated = Email::parse(email.as_str().to_string());
       let validated_email = validated.unwrap();
-      let hash_password = UserEntity::hash_password(Some(&dto.password_hash)).unwrap();
-      
-      //let is_equal = UserEntity::verify_password(&dto.senha, &hash_password);
-      //println!("{is_equal}");          
+      let hash_password = UserEntity::hash_password(Some(&dto.password_hash)).unwrap();             
 
-      let user_domain = user.create_user(&mut *tx, validated_email.as_str(), &hash_password.unwrap()).await.map_err(|_e| MyError::DatabaseError(sqlx::Error::PoolClosed))?;
-      
-      tx.commit().await.map_err(|_e| {
-        println!("{_e}");
+      let user_domain = user.create_user(&mut *tx, validated_email.as_str(), &hash_password.unwrap()).await.map_err(|_e| {
+        
         MyError::DatabaseError(sqlx::Error::PoolClosed)
       })?;
+      
+      tx.commit().await?;
 
       Ok(user_domain)
     }
@@ -38,10 +33,7 @@ impl UserService {
       let mut tx = pool
       .begin()
       .await
-      .map_err(|e| {
-        println!("{e}");
-        MyError::NotFound
-      })?;
+      .map_err(|e| MyError::NotFound)?;  
       
       let password = UserEntity::hash_password(dto.password_hash.as_ref()).unwrap();
       dto.password_hash = password;
@@ -50,10 +42,7 @@ impl UserService {
       
       let user_update = user.update_user(&mut *tx, email , dto).await.map_err(|_e| MyError::NotFound)?;
 
-      tx.commit().await.map_err(|e|{
-        println!("{e}");
-        MyError::DatabaseError(sqlx::Error::PoolClosed)
-      })?;
+      tx.commit().await.map_err(|e| MyError::DatabaseError(sqlx::Error::PoolClosed))?;
 
       Ok(user_update)
 
@@ -77,7 +66,7 @@ impl UserService {
       let mut tx = pool
       .begin()
       .await
-      .map_err(|_|MyError::NotFound)?;
+      .map_err(|_| MyError::NotFound)?;
 
       let user = UserRepository;
       let deletd_user = user.delete_user(&mut *tx, email).await?;

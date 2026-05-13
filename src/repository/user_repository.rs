@@ -3,7 +3,7 @@ use crate::domain::user::{UserEntity};
 use crate::dtos::user_dto::UpdateUserDto;
 use crate::errors::MyError;
 
-pub struct UserRepository;
+pub struct UserRepository; 
 
 impl UserRepository {
   
@@ -20,7 +20,7 @@ impl UserRepository {
     let exists = self.user_exists(executor, email).await?;
 
     if exists == true {
-      return Err(MyError::DatabaseError(sqlx::Error::PoolClosed));
+      return Err(MyError::DatabaseError(sqlx::Error::PoolClosed)); 
     }
 
     let user = sqlx::query_as!(
@@ -33,11 +33,7 @@ impl UserRepository {
       password_hash
     )
     .fetch_one(executor)
-    .await
-    .map_err(|_e| {
-      println!("{_e}");
-      MyError::DatabaseError(sqlx::Error::PoolClosed)
-    })?;
+    .await?;
     
     let user_domain = UserEntity::from(user); 
     
@@ -75,11 +71,7 @@ impl UserRepository {
         email        
       )
       .fetch_one(executor)
-      .await
-      .map_err(|e| {
-        println!("{e}");
-        MyError::DatabaseError(sqlx::Error::PoolClosed)
-      } )?;
+      .await?;
 
       let domain_user = UserEntity::from(user);
 
@@ -99,8 +91,7 @@ impl UserRepository {
       email
     )
     .fetch_optional(executor)
-    .await
-    .map_err(|_e| MyError::DatabaseError(sqlx::Error::PoolClosed) )?;
+    .await?;
     
     let exists = user.unwrap();
 
@@ -131,8 +122,7 @@ impl UserRepository {
       email
     )
     .fetch_one(executor)
-    .await
-    .map_err(|_|MyError::DatabaseError(sqlx::Error::PoolClosed))?;
+    .await?;
 
     let domain_user = UserEntity::from(user);
 
@@ -152,11 +142,7 @@ impl UserRepository {
       email
     )
     .fetch_one(executor)
-    .await
-    .map_err(|e| {
-      println!("{e}");
-      MyError::DatabaseError(sqlx::Error::PoolClosed)
-    })?;
+    .await?;
     
     let exists = exists_user.unwrap();
 

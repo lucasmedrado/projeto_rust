@@ -7,6 +7,7 @@ mod services;
 mod controllers;
 mod errors;
 mod auth;
+mod login;
 
 use controllers::user_controller::{
     create_user_handler, 
@@ -14,6 +15,13 @@ use controllers::user_controller::{
     update_user_handler,
     delete_user_handler,
 };
+
+use controllers::profile_controller::{
+    create_profile_handler,
+    update_profile_handler
+};
+
+use controllers::user_login_controller::{login_handler};
 
 use axum::{routing::{post, get, patch, delete}, Router};
 use sqlx::postgres::PgPoolOptions;
@@ -38,7 +46,10 @@ async fn main() {
         .unwrap();
 
     let app = Router::new()
+        .route("/", post(login_handler))
         .route("/users", post(create_user_handler))
+        .route("/profiles", post(create_profile_handler))
+        .route("/profiles", patch(update_profile_handler))
         .route("/users", get(find_user_handler))
         .route("/users/:email", patch(update_user_handler))
         .route("/users/:email", delete(delete_user_handler))
@@ -46,6 +57,6 @@ async fn main() {
 
     println!("🚀 Servidor rodando em http://{}", listener.local_addr().unwrap());
 
-    axum::serve(listener, app).await.unwrap();         
+    axum::serve(listener, app).await.unwrap(); 
    
 }
