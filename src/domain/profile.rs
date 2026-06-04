@@ -3,6 +3,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::models::profile::ProfileModel;
 use crate::dtos::profile_dto::UpdateProfileDto;
+use crate::repository::profile_repository::ProfileSummaryModel;
 
 #[derive(Serialize, Debug)]
 pub struct ProfileEntity {  
@@ -28,6 +29,18 @@ impl From<ProfileModel> for ProfileEntity {
 
 impl From<UpdateProfileDto> for ProfileEntity {
   fn from(value: UpdateProfileDto) -> Self {
+      ProfileEntity {
+        full_name: value.full_name,
+        localization: value.localization,
+        professional_objective: value.professional_objective,
+        slug: value.slug,
+        bio: value.bio
+      }
+  }
+}
+
+impl From<ProfileSummaryModel> for ProfileEntity {
+  fn from(value: ProfileSummaryModel) -> Self {
       ProfileEntity {
         full_name: value.full_name,
         localization: value.localization,

@@ -18,7 +18,8 @@ use controllers::user_controller::{
 
 use controllers::profile_controller::{
     create_profile_handler,
-    update_profile_handler
+    update_profile_handler,
+    find_profile_handler
 };
 
 use controllers::user_login_controller::{login_handler};
@@ -50,6 +51,7 @@ async fn main() {
         .route("/users", post(create_user_handler))
         .route("/profiles", post(create_profile_handler))
         .route("/profiles", patch(update_profile_handler))
+        .route("/profiles", get(find_profile_handler))
         .route("/users", get(find_user_handler))
         .route("/users/:email", patch(update_user_handler))
         .route("/users/:email", delete(delete_user_handler))

@@ -44,8 +44,8 @@ pub async fn update_user_handler(
 }
 
 pub async fn find_user_handler(
-  State(pool): State<PgPool>,
-  Query(params): Query<EmailQueryDto>
+  Query(params): Query<EmailQueryDto>,
+  State(pool): State<PgPool>,  
 ) -> Result<impl IntoResponse, MyError> {
 
   let user = UserService::find_user(pool, &params.email).await?;  

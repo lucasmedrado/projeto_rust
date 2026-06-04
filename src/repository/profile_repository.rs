@@ -1,10 +1,20 @@
- use crate::models::profile::ProfileModel;
-use crate::domain::profile::ProfileEntity;
-//use crate::dtos::user_dto::UpdateUserDto;
 use uuid::Uuid;
 use crate::errors::MyError;
 
+use crate::models::profile::ProfileModel;
+use crate::domain::profile::ProfileEntity;
+
 pub struct ProfileRepository;
+
+pub struct ProfileSummaryModel {
+    pub email: Option<String>,
+    pub full_name: Option<String>,
+    pub localization: Option<String>,
+    pub professional_objective: Option<String>,
+    pub slug: Option<String>,
+    pub bio: Option<String>,
+    pub is_public: bool,
+}
 
 impl ProfileRepository {
   
@@ -44,7 +54,7 @@ impl ProfileRepository {
   }
 
 
-  pub async fn find_user_by_id<E>(
+  pub async fn find_by_id<E>(
     &self,
     executor: &mut E,        
     id: Uuid,
@@ -102,75 +112,64 @@ impl ProfileRepository {
   }  
 
 
-  /*pub async fn find_user_by_email<E>(
+  pub async fn find_profile_by_id<E>(
     &self,
     executor: &mut E,
-    email: &str
-  ) -> Result<String, MyError>
+    user_id: Uuid
+  ) -> Result<ProfileEntity, MyError>
     where 
        for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres>
   {
-    let user = sqlx::query_scalar!(      
-      "SELECT email FROM users WHERE email = $1",
-      email
+    let user = sqlx::query_as!(    
+      ProfileSummaryModel,  
+      r#"
+      SELECT 
+        u.email,
+        p.full_name, 
+        p.localization, 
+        p.professional_objective, 
+        p.slug, 
+        p.bio, 
+        p.is_public 
+      FROM profiles p 
+      INNER JOIN users u 
+      ON p.user_id = u.id
+      WHERE p.user_id = $1     
+      "#,
+      user_id
     )
-    .fetch_optional(executor)
+    .fetch_one(executor)
     .await?;
     
-    let exists = user.unwrap();
+    let profile_entity = ProfileEntity::from(user);
 
-    Ok(exists)
+    Ok(profile_entity)
   }
 
-  pub async fn delete_user<E>(
+  
+  pub async fn delete_profile_by_id<E>(
     &self,
     executor: &mut E,
-    email: &str
-  ) -> Result<UserEntity, MyError>
+    user_id: Uuid
+  ) -> Result<ProfileEntity, MyError>
     where 
       for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres> 
-  {
-    let exists = self.user_exists(executor, &email).await?;
-
-    if exists == false {
-      return Err(MyError::NotFound);
-    }
+  {    
 
     let user = sqlx::query_as!(
-      UserModel,
+      ProfileEntity,
       r#"
-        DELETE FROM users
-        WHERE email = $1
-        RETURNING id, email, password_hash      
+        DELETE FROM profiles
+        WHERE user_id = $1
+        RETURNING full_name, localization, professional_objective, slug, bio     
       "#,
-      email
+      user_id
     )
     .fetch_one(executor)
-    .await?;
+    .await?;    
 
-    let domain_user = UserEntity::from(user);
-
-    Ok(domain_user)
+    Ok(user)
   }
-
-  pub async fn user_exists<E>(
-    &self,
-    executor: &mut E,
-    email: &str
-  ) -> Result<bool, MyError>
-    where 
-       for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres>
-  {
-    let exists_user = sqlx::query_scalar!(
-      r#"SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)"#,
-      email
-    )
-    .fetch_one(executor)
-    .await?;
-    
-    let exists = exists_user.unwrap();
-
-    Ok(exists)
-  }*/
+  
 }
 

@@ -14,7 +14,7 @@ impl ProfileService {
     .await?;    
     
     
-    let user_id = ProfileService::find_user_by_id(pool, user_id).await.unwrap();
+    let user_id = ProfileService::find_by_id(pool, user_id).await.unwrap();
 
     let profile = ProfileRepository;
     let profile_domain = profile.create_profile(&mut *tx , user_id, dto.full_name, dto.localization, dto.professional_objective, dto.slug, dto.bio).await?;
@@ -30,7 +30,7 @@ impl ProfileService {
     .begin()
     .await?;    
 
-    let user_id = ProfileService::find_user_by_id(pool, user_id).await?;
+    let user_id = ProfileService::find_by_id(pool, user_id).await?;
     
 
     let profile = ProfileRepository;
@@ -42,13 +42,43 @@ impl ProfileService {
   }
 
 
-  pub async fn find_user_by_id(pool: PgPool, id: Uuid) -> Result<Uuid, MyError> {
+  pub async fn find_profile_by_id(pool: PgPool, user_id: Uuid) -> Result<ProfileEntity, MyError> {
+    let mut tx = pool
+    .begin()
+    .await?;
+
+    let user_id = ProfileService::find_by_id(pool, user_id).await?;
+
+    let profile = ProfileRepository;
+    let profile_domain = profile.find_profile_by_id(&mut *tx, user_id).await?;
+
+    tx.commit().await?;
+
+    Ok(profile_domain)
+  }
+
+
+  pub async fn delete_profile_by_id(pool: PgPool, user_id: Uuid) -> Result<ProfileEntity, MyError> {
+    let mut tx = pool
+    .begin()
+    .await?;    
+
+    let profile = ProfileRepository;
+    let profile_domain = profile.delete_profile_by_id(&mut *tx, user_id).await?;
+
+    tx.commit().await?;
+
+    Ok(profile_domain)
+  }
+
+
+  pub async fn find_by_id(pool: PgPool, id: Uuid) -> Result<Uuid, MyError> {
     let mut tx = pool
     .begin()
     .await?;
 
     let profile = ProfileRepository;
-    let user_id = profile.find_user_by_id(&mut *tx, id).await?;
+    let user_id = profile.find_by_id(&mut *tx, id).await?;
     
     tx.commit().await?;
 

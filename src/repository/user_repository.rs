@@ -86,7 +86,7 @@ impl UserRepository {
     where 
        for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres>
   {
-    let user = sqlx::query_scalar!(      
+    let user = sqlx::query_scalar!(       
       "SELECT email FROM users WHERE email = $1",
       email
     )

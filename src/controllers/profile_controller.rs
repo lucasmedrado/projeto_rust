@@ -35,5 +35,29 @@ pub async fn update_profile_handler(
   let profile = ProfileService::update_profile(pool, user_id, params).await.unwrap();
 
   Ok((StatusCode::CREATED, Json(profile)))
+}
 
+pub async fn find_profile_handler(
+  AuthUser(claims): AuthUser,
+  State(pool): State<PgPool>
+) -> Result<(StatusCode, Json<ProfileEntity>), MyError> {
+
+  let user_id = claims.sub.parse::<Uuid>().unwrap();
+
+  let profile = ProfileService::find_profile_by_id(pool, user_id).await?;
+
+  Ok((StatusCode::CREATED, Json(profile)))
+}
+
+pub async fn delete_profile_handler(
+  AuthUser(claims): AuthUser,
+  State(pool): State<PgPool>
+) -> Result<(StatusCode, Json<ProfileEntity>), MyError> {
+
+  // Equivalente, maneira explícita -> let user_id = claims.sub.parse::<Uuid>().unwrap();
+  let user_id: Uuid = claims.sub.parse().unwrap();
+
+  let profile = ProfileService::delete_profile_by_id(pool, user_id).await?;
+
+  Ok((StatusCode::CREATED, Json(profile)))  
 }
