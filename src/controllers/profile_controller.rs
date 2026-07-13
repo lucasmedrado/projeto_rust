@@ -25,7 +25,7 @@ pub async fn create_profile_handler(
 pub async fn update_profile_handler(
   AuthUser(claims): AuthUser,
   State(pool): State<PgPool>,
-  ValidatedJson(payload): ValidatedJson<UpdateProfileDto>
+  ValidatedJson(payload): ValidatedJson<UpdateProfileDto> 
 ) -> Result<(StatusCode, Json<ProfileEntity>), MyError> {
   
   let user_id = claims.sub.parse::<Uuid>().unwrap(); 

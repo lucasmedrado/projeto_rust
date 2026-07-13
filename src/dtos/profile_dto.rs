@@ -3,7 +3,6 @@ use validator::Validate;
 use regex::Regex;
 use once_cell::sync::Lazy;
 
-use crate::domain::profile::ProfileEntity;
 
 static RE_SLUG: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"^[a-z0-9]+(?:-[a-z0-9]+)*$").unwrap()
@@ -12,7 +11,7 @@ static RE_SLUG: Lazy<Regex> = Lazy::new(|| {
 #[derive(Debug, Deserialize, Validate)]
 pub struct CreateProfileDto {
   #[validate(length(min = 3, max = 100, message = "Nome completo deve ter entre 3 e 100 caracteres"))]
-  pub full_name: Option<String>,
+  pub full_name: String,
 
   #[validate(length(min = 3, max = 100, message = "Localização deve ter entre 3 e 100 caracteres"))]
   pub localization: Option<String>,

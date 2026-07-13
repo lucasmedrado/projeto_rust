@@ -1,4 +1,5 @@
 use sqlx::PgPool;
+
 use crate::dtos::user_dto::{CreateUserDto, UpdateUserDto};
 use crate::domain::user::{Email, UserEntity};
 use crate::repository::user_repository::UserRepository;

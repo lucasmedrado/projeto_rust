@@ -22,6 +22,8 @@ use controllers::profile_controller::{
     find_profile_handler
 };
 
+use controllers::experience_controller::{create_experience_handler};
+
 use controllers::user_login_controller::{login_handler};
 
 use axum::{routing::{post, get, patch, delete}, Router};
@@ -52,6 +54,7 @@ async fn main() {
         .route("/profiles", post(create_profile_handler))
         .route("/profiles", patch(update_profile_handler))
         .route("/profiles", get(find_profile_handler))
+        .route("/experiences", post(create_experience_handler))
         .route("/users", get(find_user_handler))
         .route("/users/:email", patch(update_user_handler))
         .route("/users/:email", delete(delete_user_handler))
@@ -59,6 +62,6 @@ async fn main() {
 
     println!("🚀 Servidor rodando em http://{}", listener.local_addr().unwrap());
 
-    axum::serve(listener, app).await.unwrap(); 
+    axum::serve(listener, app).await.unwrap();     
    
 }

@@ -22,7 +22,7 @@ impl ProfileRepository {
     &self, 
     executor: &mut E,
     user_id: Uuid, 
-    full_name: Option<String>,
+    full_name: String,
     localization: Option<String>,
     professional_objective: Option<String>,
 	  slug: String,
@@ -34,7 +34,8 @@ impl ProfileRepository {
 
     let profile = sqlx::query_as!(
       ProfileModel,    
-      r#"INSERT INTO profiles (user_id, full_name, localization, professional_objective, slug, bio)
+      r#"
+      INSERT INTO profiles (user_id, full_name, localization, professional_objective, slug, bio)
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING id, user_id, full_name, localization, professional_objective, slug, bio, is_public 
       "#,

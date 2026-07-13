@@ -1,8 +1,9 @@
+use uuid::Uuid;
 use sqlx::PgPool;
+
 use crate::dtos::profile_dto::{CreateProfileDto};
 use crate::domain::profile::{ProfileEntity};
 use crate::repository::profile_repository::ProfileRepository;
-use uuid::Uuid;
 use crate::errors::MyError;
 
 pub struct ProfileService;
