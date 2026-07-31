@@ -5,7 +5,7 @@ use axum::response::{IntoResponse, Response};
 use serde::de::DeserializeOwned;
 use validator::Validate;
 
-pub struct ValidatedJson<T>(pub T);
+pub struct ValidatedJson<T>(pub T); 
 
 #[async_trait]
 impl<S, T> FromRequest<S> for ValidatedJson<T>

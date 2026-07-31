@@ -44,7 +44,7 @@ impl ExperienceRepository {
       for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres> 
   {
     let profile_id = self.fetch_id(executor, user_id).await?;
-    println!("Repository {profile_id}");
+    
     let experience = sqlx::query_as!(
       ExperienceModel,
       r#"
@@ -66,6 +66,47 @@ impl ExperienceRepository {
 
     Ok(experience_domain)
   }
+
+  pub async fn update_experience<E>(
+    &self,
+    executor: &mut E,
+    user_id: Uuid,
+    experience: NewExperience
+  ) -> Result<ExperienceEntity, MyError>
+    where 
+      for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres> 
+    {
+      let profile_id = self.fetch_id(executor, user_id).await?;
+
+      let experience = sqlx::query_as!(
+        ExperienceModel,
+        r#"
+          UPDATE experiences
+          SET
+            company_name = COALESCE($1, company_name), 
+            position = COALESCE($2, position), 
+            start_date = COALESCE($3, start_date), 
+            end_date = COALESCE($4, end_date), 
+            description = COALESCE($5, description)
+          WHERE 
+            profile_id = $6
+          RETURNING
+            id, profile_id, company_name, position, start_date, end_date, description 
+        "#,
+        experience.company_name,
+        experience.position,
+        experience.start_date,
+        experience.end_date,
+        experience.description,
+        profile_id
+      )
+      .fetch_one(executor)
+      .await?;
+
+      let experience_domain: ExperienceEntity = experience.into();
+
+      Ok(experience_domain)
+    }
 
   pub async fn fetch_id<E>(
     &self,

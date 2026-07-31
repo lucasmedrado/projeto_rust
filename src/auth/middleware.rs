@@ -23,7 +23,7 @@ impl IntoResponse for AuthError {
 }
 
 #[async_trait]
-impl <S> FromRequestParts<S> for AuthUser 
+impl <S> FromRequestParts<S> for AuthUser  
   where S: Send + Sync 
   {
     type Rejection = AuthError;

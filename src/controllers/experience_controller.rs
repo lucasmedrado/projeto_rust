@@ -15,9 +15,20 @@ pub async fn create_experience_handler(
   ValidatedJson(payload): ValidatedJson<CreateExperienceDto>
 ) -> Result<(StatusCode, Json<ExperienceEntity>), MyError> {
 
-  let profile_id = claims.sub.parse::<Uuid>().unwrap();
-  println!("aqui");
+  let profile_id = claims.sub.parse::<Uuid>().unwrap();  
   let experience = ExperienceService::create_experience(pool, profile_id, payload).await?;  
+  
+  Ok((StatusCode::CREATED, Json(experience)))
+}
+
+pub async fn update_experience_handler(
+  AuthUser(claims): AuthUser,
+  State(pool): State<PgPool>,
+  ValidatedJson(payload): ValidatedJson<CreateExperienceDto>
+) -> Result<(StatusCode, Json<ExperienceEntity>), MyError> {
+
+  let profile_id = claims.sub.parse::<Uuid>().unwrap();  
+  let experience = ExperienceService::update_experience(pool, profile_id, payload).await?;  
   
   Ok((StatusCode::CREATED, Json(experience)))
 }

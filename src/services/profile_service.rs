@@ -8,7 +8,7 @@ use crate::errors::MyError;
 
 pub struct ProfileService;
 
-impl ProfileService {
+impl ProfileService { 
   pub async fn create_profile(pool: PgPool, user_id: Uuid, dto: CreateProfileDto) -> Result<ProfileEntity, MyError> {
     let mut tx = pool
     .begin()
