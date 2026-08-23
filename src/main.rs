@@ -22,7 +22,11 @@ use controllers::profile_controller::{
     find_profile_handler
 };
 
-use controllers::experience_controller::{create_experience_handler, update_experience_handler};
+use controllers::experience_controller::{
+    create_experience_handler, 
+    update_experience_handler,
+    find_experience_handler
+};
 
 use controllers::user_login_controller::{login_handler};
 
@@ -56,6 +60,7 @@ async fn main() {
         .route("/profiles", get(find_profile_handler))
         .route("/experiences", post(create_experience_handler))
         .route("/experiences", patch(update_experience_handler))
+        .route("/experiences", get(find_experience_handler))
         .route("/users", get(find_user_handler))
         .route("/users/:email", patch(update_user_handler))
         .route("/users/:email", delete(delete_user_handler))

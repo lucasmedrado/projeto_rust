@@ -43,4 +43,19 @@ impl ExperienceService {
     Ok(experience_domain)
   }
 
+  pub async fn find_experience(pool: PgPool, user_id: Uuid) -> Result<ExperienceEntity, MyError> {
+    let mut tx = pool
+    .begin()
+    .await?;    
+
+    let experience_repository = ExperienceRepository;    
+    let experience_domain = experience_repository.find_experience_by_id(&mut *tx , user_id).await.map_err(|err| {
+     
+    }).unwrap();    
+
+    tx.commit().await?;
+
+    Ok(experience_domain)
+  }
+
 }

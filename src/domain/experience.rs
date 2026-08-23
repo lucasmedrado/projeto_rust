@@ -2,6 +2,7 @@ use serde::Serialize;
 use chrono::NaiveDate;
 
 use crate::models::experience::ExperienceModel;
+use crate::repository::experience_repository::NewExperience;
 
 #[derive(Debug, Serialize)]
 pub struct ExperienceEntity {
@@ -14,6 +15,18 @@ pub struct ExperienceEntity {
 
 impl From<ExperienceModel> for ExperienceEntity {
   fn from(value: ExperienceModel) -> Self {
+      Self {
+        company_name: value.company_name,
+        position: value.position,
+        start_date: value.start_date,
+        end_date: value.end_date,
+        description: value.description
+      }
+  }
+}
+
+impl From<NewExperience> for ExperienceEntity {
+  fn from(value: NewExperience) -> Self {
       Self {
         company_name: value.company_name,
         position: value.position,

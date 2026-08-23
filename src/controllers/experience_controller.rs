@@ -15,8 +15,8 @@ pub async fn create_experience_handler(
   ValidatedJson(payload): ValidatedJson<CreateExperienceDto>
 ) -> Result<(StatusCode, Json<ExperienceEntity>), MyError> {
 
-  let profile_id = claims.sub.parse::<Uuid>().unwrap();  
-  let experience = ExperienceService::create_experience(pool, profile_id, payload).await?;  
+  let user_id = claims.sub.parse::<Uuid>().unwrap();  
+  let experience = ExperienceService::create_experience(pool, user_id, payload).await?;  
   
   Ok((StatusCode::CREATED, Json(experience)))
 }
@@ -27,8 +27,20 @@ pub async fn update_experience_handler(
   ValidatedJson(payload): ValidatedJson<CreateExperienceDto>
 ) -> Result<(StatusCode, Json<ExperienceEntity>), MyError> {
 
-  let profile_id = claims.sub.parse::<Uuid>().unwrap();  
-  let experience = ExperienceService::update_experience(pool, profile_id, payload).await?;  
+  let user_id = claims.sub.parse::<Uuid>().unwrap();  
+  let experience = ExperienceService::update_experience(pool, user_id, payload).await?;  
+  
+  Ok((StatusCode::CREATED, Json(experience)))
+}
+
+
+pub async fn find_experience_handler(
+  AuthUser(claims): AuthUser,
+  State(pool): State<PgPool>,  
+) -> Result<(StatusCode, Json<ExperienceEntity>), MyError> {
+
+  let user_id = claims.sub.parse::<Uuid>().unwrap();  
+  let experience = ExperienceService::find_experience(pool, user_id).await?;  
   
   Ok((StatusCode::CREATED, Json(experience)))
 }

@@ -1,3 +1,4 @@
+use sqlx::Postgres;
 use uuid::Uuid;
 use chrono::NaiveDate;
 
@@ -7,11 +8,11 @@ use crate::domain::experience::ExperienceEntity;
 use crate::dtos::experience_dto::CreateExperienceDto;
 
 pub struct NewExperience {  
-  company_name: String,
-  position: String,
-  start_date: NaiveDate,
-  end_date: Option<NaiveDate>,  
-  description: Option<String>,
+  pub company_name: String,
+  pub position: String,
+  pub start_date: NaiveDate,
+  pub end_date: Option<NaiveDate>,  
+  pub description: Option<String>,
 }
 
 pub struct ProfileId {
@@ -39,7 +40,7 @@ impl ExperienceRepository {
     executor: &mut E,
     user_id: Uuid,
     experience: NewExperience
-  ) -> Result<ExperienceEntity, MyError>
+  ) -> Result<ExperienceEntity, MyError> 
     where 
       for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres> 
   {
@@ -107,6 +108,40 @@ impl ExperienceRepository {
 
       Ok(experience_domain)
     }
+
+  
+  pub async fn find_experience_by_id<E>(
+    &self,
+    executor: &mut E,
+    user_id: Uuid
+  ) -> Result<ExperienceEntity, MyError> 
+    where 
+      for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres>
+  {
+    let profile_id = self.fetch_id(executor, user_id).await?;
+
+    let user = sqlx::query_as!(    
+      NewExperience,  
+      r#"
+      SELECT 
+        company_name,
+        position,
+        start_date,
+        end_date,  
+        description
+      FROM experiences      
+      WHERE profile_id = $1     
+      "#,
+      profile_id
+    )
+    .fetch_one(executor)
+    .await?;
+
+    let experience_domain = ExperienceEntity::from(user);
+
+    Ok(experience_domain)
+  }
+
 
   pub async fn fetch_id<E>(
     &self,
