@@ -10,7 +10,7 @@ pub struct ValidatedJson<T>(pub T);
 #[async_trait]
 impl<S, T> FromRequest<S> for ValidatedJson<T>
 where 
-    T: DeserializeOwned + Validate,
+    T: DeserializeOwned + Validate, 
     S: Send + Sync,
   {
     type Rejection = (StatusCode, String);

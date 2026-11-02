@@ -9,7 +9,7 @@ use axum::{
 use serde_json::json;
 use super::jwt::{validate_token, AuthError, Claims};
 
-pub struct AuthUser(pub Claims);
+pub struct AuthUser(pub Claims); 
 
 impl IntoResponse for AuthError {
     fn into_response(self) -> Response {

@@ -10,7 +10,7 @@ use crate::auth::middleware::AuthUser;
 use crate::errors::MyError;
 
 pub async fn create_profile_handler(
-  AuthUser(claims): AuthUser,
+  AuthUser(claims): AuthUser,  
   State(pool): State<PgPool>,
   ValidatedJson(payload): ValidatedJson<CreateProfileDto>
 ) -> Result<(StatusCode, Json<ProfileEntity>), MyError> {

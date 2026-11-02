@@ -2,8 +2,19 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+use std::env::{self, VarError};
+use dotenvy::dotenv;
+ 
+//const SECRET: &[u8] = b"sua_chave_secreta_aqui";
+fn dot_env() -> Result<String, VarError>{
 
-const SECRET: &[u8] = b"sua_chave_secreta_aqui";
+    dotenv().ok();
+    
+    let secret_key = env::var("SECRET_KEY")?;
+
+    Ok(secret_key)
+        
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
@@ -41,10 +52,17 @@ pub fn generate_token(user_id: Uuid, email: &str) -> Result<String, AuthError> {
     iat
   };
 
+  let SECRET_KEY = dot_env();
+
+  let secret_key = match SECRET_KEY {
+     Ok(secret) => secret,
+     _ => "Error".to_string()
+  };
+
   encode(
     &Header::default(), 
     &claims, 
-    &EncodingKey::from_secret(SECRET),
+    &EncodingKey::from_secret(secret_key.as_bytes()),
   )
   .map_err(|_| AuthError::TokenCreation)
 }
@@ -53,9 +71,16 @@ pub fn validate_token(token: &str) -> Result<Claims, AuthError> {
   let mut validation = Validation::default();
   validation.validate_exp = true;
 
+  let SECRET_KEY = dot_env();
+
+  let secret_key = match SECRET_KEY {
+     Ok(secret) => secret,
+     _ => "Error".to_string()
+  };
+
   decode::<Claims>(
     token,
-    &DecodingKey::from_secret(SECRET),
+    &DecodingKey::from_secret(secret_key.as_bytes()),
     &validation
   )
   .map(|data| data.claims)

@@ -4,7 +4,7 @@ use sqlx::PgPool;
 
 use crate::validated_json::ValidatedJson;
 use crate::dtos::user_dto::{CreateUserDto, EmailQueryDto, UpdateUserDto, UserAuthedResponse};
-use crate::domain::user::UserEntity;
+use crate::domain::user::{UserEntity};
 use crate::services::user_service::UserService; 
 use crate::auth::middleware::AuthUser;
 use crate::auth::jwt::generate_token;
@@ -32,23 +32,22 @@ pub async fn create_user_handler(
 }
 
 pub async fn update_user_handler(  
-  AuthUser(claims): AuthUser,
   Path(email): Path<String>,
   State(pool): State<PgPool>,
   ValidatedJson(payload): ValidatedJson<UpdateUserDto>
-) -> Result<(StatusCode, Json<UserEntity>), MyError> {  
+) -> Result<(StatusCode, Json<UserEntity>), MyError> {    
 
-  let user = UserService::update_user(pool, email, payload).await?;
+  let user = UserService::update_user(pool, email.to_string(), payload).await?;
 
   Ok((StatusCode::OK, Json(user)))
 }
 
-pub async fn find_user_handler(
+pub async fn find_user_handler( 
   Query(params): Query<EmailQueryDto>,
   State(pool): State<PgPool>,  
-) -> Result<impl IntoResponse, MyError> {
+) -> Result<impl IntoResponse, MyError> {    
 
-  let user = UserService::find_user(pool, &params.email).await?;  
+  let user = UserService::find_user(&pool, &params.email).await?;  
 
   Ok((StatusCode::FOUND, Json(user)))
 }
