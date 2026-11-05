@@ -5,6 +5,7 @@ use crate::dtos::profile_dto::{CreateProfileDto};
 use crate::domain::profile::{ProfileEntity};
 use crate::repository::profile_repository::ProfileRepository;
 use crate::errors::MyError;
+use crate::repository::user_repository::UserRepository;
 
 pub struct ProfileService;
 
@@ -13,12 +14,21 @@ impl ProfileService {
     let mut tx = pool
     .begin()
     .await?;    
+
+    let user_repository = UserRepository;
+     
+    let profile_model = user_repository.find_user_by_id(&mut *tx, &user_id).await?;
     
-    
-    let user_id = ProfileService::find_by_id(pool, user_id).await.unwrap();
+    match user_id != profile_model.id.unwrap() {
+      true => return Err(MyError::NotFound),
+      false => (),
+    }    
 
     let profile = ProfileRepository;
-    let profile_domain = profile.create_profile(&mut *tx , user_id, dto.full_name, dto.localization, dto.professional_objective, dto.slug, dto.bio).await?;
+    let dto = ProfileEntity::from(dto);
+    let profile_model = profile.create_profile(&mut *tx , user_id, dto).await?;
+    
+    let profile_domain = ProfileEntity::from(profile_model);
 
     tx.commit().await?;
 
@@ -31,11 +41,19 @@ impl ProfileService {
     .begin()
     .await?;    
 
-    let user_id = ProfileService::find_by_id(pool, user_id).await?;
-    
+    let profile_repository = ProfileRepository;
+     
+    let profile_model = profile_repository.find_profile_by_id(&mut *tx, user_id).await?;
+
+    match user_id != profile_model.user_id {
+      true => return Err(MyError::NotFound),
+      false => (),
+    }    
 
     let profile = ProfileRepository;
-    let profile_domain = profile.update_user(&mut *tx, user_id, params).await?;
+    let profile_model = profile.update_profile(&mut *tx , profile_model.user_id, params).await?;
+
+    let profile_domain = ProfileEntity::from(profile_model);
 
     tx.commit().await?;
 
@@ -48,10 +66,19 @@ impl ProfileService {
     .begin()
     .await?;
 
-    let user_id = ProfileService::find_by_id(pool, user_id).await?;
+    let profile_repository = ProfileRepository;
+     
+    let profile_model = profile_repository.find_profile_by_id(&mut *tx, user_id).await?;
+
+    match user_id != profile_model.user_id {
+      true => return Err(MyError::NotFound),
+      false => (),
+    }    
 
     let profile = ProfileRepository;
-    let profile_domain = profile.find_profile_by_id(&mut *tx, user_id).await?;
+    let profile_model = profile.find_profile_by_id(&mut *tx , profile_model.user_id).await?;
+
+    let profile_domain = ProfileEntity::from(profile_model);
 
     tx.commit().await?;
 
@@ -64,8 +91,26 @@ impl ProfileService {
     .begin()
     .await?;    
 
-    let profile = ProfileRepository;
+    /*let profile = ProfileRepository;
     let profile_domain = profile.delete_profile_by_id(&mut *tx, user_id).await?;
+
+    tx.commit().await?;
+
+    Ok(profile_domain)*/
+
+    let profile_repository = ProfileRepository;
+     
+    let profile_model = profile_repository.find_profile_by_id(&mut *tx, user_id).await?;
+
+    match user_id != profile_model.user_id {
+      true => return Err(MyError::NotFound),
+      false => (),
+    }    
+
+    let profile = ProfileRepository;
+    let profile_model = profile.delete_profile_by_id(&mut *tx , profile_model.user_id).await?;
+
+    let profile_domain = ProfileEntity::from(profile_model);
 
     tx.commit().await?;
 

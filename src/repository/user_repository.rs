@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 use crate::models::user::UserModel;
 use crate::domain::user::{UserEntity};
 use crate::dtos::user_dto::UpdateUserDto;
@@ -100,6 +102,26 @@ impl UserRepository {
     Ok(user_domain)
   }
 
+  pub async fn find_user_by_id<E>(
+    &self,
+    executor: &mut E,
+    user_id: &Uuid
+  ) -> Result<UserEntity, MyError>
+    where 
+       for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres>
+  {
+    let user = sqlx::query_as!( 
+      UserModel,      
+      r#"SELECT id, email, password_hash FROM users WHERE id = $1"#,
+      user_id
+    )
+    .fetch_one(executor)
+    .await?;  
+
+    let user_domain = UserEntity::from(user);  
+
+    Ok(user_domain)
+  }
 
   pub async fn find_user_by_email<E>(
     &self,

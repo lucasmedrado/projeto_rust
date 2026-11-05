@@ -7,6 +7,7 @@ use crate::domain::profile::ProfileEntity;
 pub struct ProfileRepository;
 
 pub struct ProfileSummaryModel {
+    pub user_id: Uuid,
     pub email: Option<String>,
     pub full_name: Option<String>,
     pub localization: Option<String>,
@@ -22,12 +23,8 @@ impl ProfileRepository {
     &self, 
     executor: &mut E,
     user_id: Uuid, 
-    full_name: String,
-    localization: Option<String>,
-    professional_objective: Option<String>,
-	  slug: String,
-    bio: Option<String>,	  
-  ) -> Result<ProfileEntity, MyError>
+    params: ProfileEntity 
+  ) -> Result<ProfileModel, MyError>
     where
       for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres>
   {      
@@ -40,18 +37,16 @@ impl ProfileRepository {
       RETURNING id, user_id, full_name, localization, professional_objective, slug, bio, is_public 
       "#,
       user_id,
-      full_name,
-      localization,
-      professional_objective,
-      slug,
-      bio
+      params.full_name,
+      params.localization,
+      params.professional_objective.unwrap(),
+      params.slug,
+      params.bio.unwrap()
     )
     .fetch_one(executor)
-    .await?;
+    .await?;     
     
-    let profile_domain = ProfileEntity::from(profile); 
-    
-    Ok(profile_domain)
+    Ok(profile)
   }
 
 
@@ -74,7 +69,7 @@ impl ProfileRepository {
   }
 
 
-  pub async fn update_user<E>(
+  pub async fn update_profile<E>(
     &self,
     executor: &mut E,
     user_id: Uuid,    
@@ -117,34 +112,34 @@ impl ProfileRepository {
     &self,
     executor: &mut E,
     user_id: Uuid
-  ) -> Result<ProfileEntity, MyError>
+  ) -> Result<ProfileModel, MyError>
     where 
        for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres>
   {
     let user = sqlx::query_as!(    
-      ProfileSummaryModel,  
+      ProfileModel,  
       r#"
       SELECT 
-        u.email,
-        p.full_name, 
-        p.localization, 
-        p.professional_objective, 
-        p.slug, 
-        p.bio, 
-        p.is_public 
-      FROM profiles p 
-      INNER JOIN users u 
-      ON p.user_id = u.id
-      WHERE p.user_id = $1     
+        id, 
+        user_id, 
+        full_name, 
+        localization, 
+        professional_objective, 
+        slug, 
+        bio, 
+        is_public        
+      FROM 
+        profiles      
+      WHERE 
+        user_id = $1     
       "#,
       user_id
     )
     .fetch_one(executor)
-    .await?;
-    
-    let profile_entity = ProfileEntity::from(user);
+    .await?;    
 
-    Ok(profile_entity)
+    Ok(user)
+
   }
 
   
@@ -152,17 +147,17 @@ impl ProfileRepository {
     &self,
     executor: &mut E,
     user_id: Uuid
-  ) -> Result<ProfileEntity, MyError>
+  ) -> Result<ProfileModel, MyError>
     where 
       for<'c> &'c mut E: sqlx::Executor<'c, Database = sqlx::Postgres> 
   {    
 
     let user = sqlx::query_as!(
-      ProfileEntity,
+      ProfileModel,
       r#"
         DELETE FROM profiles
         WHERE user_id = $1
-        RETURNING full_name, localization, professional_objective, slug, bio     
+        RETURNING id, user_id, full_name, localization, professional_objective, slug, bio, is_public     
       "#,
       user_id
     )

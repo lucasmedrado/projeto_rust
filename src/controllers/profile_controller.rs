@@ -15,7 +15,7 @@ pub async fn create_profile_handler(
   ValidatedJson(payload): ValidatedJson<CreateProfileDto>
 ) -> Result<(StatusCode, Json<ProfileEntity>), MyError> {
 
-  let user_id = claims.sub.parse::<Uuid>().unwrap();
+  let user_id = claims.sub.parse::<Uuid>().unwrap();  
 
   let profile = ProfileService::create_profile(pool, user_id, payload).await.unwrap();  
   
@@ -28,7 +28,7 @@ pub async fn update_profile_handler(
   ValidatedJson(payload): ValidatedJson<UpdateProfileDto> 
 ) -> Result<(StatusCode, Json<ProfileEntity>), MyError> {
   
-  let user_id = claims.sub.parse::<Uuid>().unwrap(); 
+  let user_id = claims.sub.parse::<Uuid>().unwrap();   
   
   let params: ProfileEntity = payload.into(); // Equivalente, maneira explícita -> let params = ProfileEntity::from(payload);
 

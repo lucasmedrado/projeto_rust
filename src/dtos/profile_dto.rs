@@ -1,7 +1,10 @@
 use serde::{Deserialize};
+use uuid::Uuid;
 use validator::Validate;
 use regex::Regex;
 use once_cell::sync::Lazy;
+
+use crate::domain::profile::ProfileEntity;
 
 
 static RE_SLUG: Lazy<Regex> = Lazy::new(|| {
@@ -51,6 +54,18 @@ pub struct UpdateProfileDto {
   #[validate(length(min = 15, max = 500, message = "A bio deve ter entre 20 e 500 caracteres" ))]
   pub bio: Option<String>,
   
+}
+
+impl From<CreateProfileDto> for ProfileEntity {
+    fn from(value: CreateProfileDto) -> Self {
+        Self {
+          full_name: value.full_name,
+          localization: value.localization.unwrap(),
+          professional_objective: value.professional_objective,
+          slug: value.slug,
+          bio: value.bio
+        }
+    }
 }
 
 
